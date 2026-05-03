@@ -114,7 +114,7 @@ func main() {
 			continue
 		}
 
-		go rb.write(buff)
+		rb.write(buff)
 
 	}
 }

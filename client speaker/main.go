@@ -10,7 +10,7 @@ import (
 )
 
 func udp_connection(buff []byte) {
-	conn, err := net.Dial("udp", "192.168.1.109:8080")
+	conn, err := net.Dial("udp", ":8080")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -40,7 +40,7 @@ func main() {
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		// pInputSamples contém o que está sendo capturado agora
 		if len(pInputSamples) > 0 {
-			go udp_connection(pInputSamples)
+			udp_connection(pInputSamples)
 		}
 	}
 
