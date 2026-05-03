@@ -53,7 +53,7 @@ func playback(rb *RingBuffer) {
 		fmt.Printf("Erro ao iniciar dispositivo: %v\n", err)
 		os.Exit(1)
 	}
-
+	fmt.Scanln()
 }
 
 func (rb *RingBuffer) Read(p []byte) int {
@@ -102,6 +102,8 @@ func main() {
 
 	defer conn.Close()
 
+	go playback(&rb)
+
 	for {
 		buff := make([]byte, 1780)
 		n, ClientAddrs, err := conn.ReadFromUDP(buff)
@@ -112,8 +114,7 @@ func main() {
 			continue
 		}
 
-		rb.write(buff)
-		playback(&rb)
+		go rb.write(buff)
 
 	}
 }
