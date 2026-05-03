@@ -85,6 +85,9 @@ func (rb *RingBuffer) write(data []byte) int {
 
 func main() {
 	var rb RingBuffer
+	rb.head = 0
+	rb.tail = 0
+	rb.size = 44100 * 2 * 2
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
