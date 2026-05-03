@@ -88,6 +88,7 @@ func main() {
 	rb.head = 0
 	rb.tail = 0
 	rb.size = 44100 * 2 * 2
+	rb.data = make([]byte, rb.size)
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
