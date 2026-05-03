@@ -10,6 +10,7 @@ import (
 )
 
 func playback(buff []byte) {
+	fmt.Println("o buffer sendo passado para o playback", buff[:5])
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
 		fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -24,7 +25,7 @@ func playback(buff []byte) {
 	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-		copy(pOutputSample, buff[:1024])
+		copy(pOutputSample, buff)
 	}
 
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
@@ -58,20 +59,16 @@ func main() {
 	defer conn.Close()
 
 	for {
-		buff := make([]byte, 1024)
+		buff := make([]byte, 1780)
 		n, ClientAddrs, err := conn.ReadFromUDP(buff)
+
 		if err != nil {
+			println(n, ClientAddrs)
 			log.Println(err)
 			continue
 		}
 
-		go playback(buff[:n])
-
-		_, err = conn.WriteToUDP([]byte("ola mundo"), ClientAddrs)
-
-		if err != nil {
-			log.Println(err)
-		}
+		playback(buff)
 
 	}
 }
