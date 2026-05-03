@@ -10,7 +10,7 @@ import (
 )
 
 func udp_connection(buff []byte) {
-	conn, err := net.Dial("udp", ":8080")
+	conn, err := net.Dial("udp", "192.168.1.109:8080")
 	if err != nil {
 		log.Fatalln(err)
 	}

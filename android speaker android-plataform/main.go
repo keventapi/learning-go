@@ -9,8 +9,14 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
-func playback(buff []byte) {
-	fmt.Println("o buffer sendo passado para o playback", buff[:5])
+type RingBuffer struct {
+	data []byte
+	head int
+	tail int
+	size int
+}
+
+func playback(rb *RingBuffer) {
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
 		fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -25,7 +31,12 @@ func playback(buff []byte) {
 	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-		copy(pOutputSample, buff)
+		read_len := rb.Read(pOutputSample)
+		if read_len < len(pOutputSample) {
+			for i := read_len; i < len(pOutputSample); i++ {
+				pOutputSample[i] = 0
+			}
+		}
 	}
 
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
@@ -45,7 +56,36 @@ func playback(buff []byte) {
 
 }
 
+func (rb *RingBuffer) Read(p []byte) int {
+	n := 0
+	for i := 0; i < len(p); i++ {
+		if rb.tail == rb.head {
+			break
+		}
+
+		p[i] = rb.data[rb.tail]
+
+		rb.data[rb.tail] = 0
+
+		rb.tail = (rb.tail + 1) % rb.size
+		n++
+	}
+	return n
+}
+
+func (rb *RingBuffer) write(data []byte) int {
+	n := 0
+	for i := 0; i < len(data); i++ {
+		rb.data[rb.head] = data[i]
+		n++
+		rb.head = (rb.head + 1) % rb.size
+	}
+	return n
+}
+
 func main() {
+	var rb RingBuffer
+
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
 		log.Fatalln(err)
@@ -68,7 +108,8 @@ func main() {
 			continue
 		}
 
-		playback(buff)
+		rb.write(buff)
+		playback(&rb)
 
 	}
 }
