@@ -76,9 +76,6 @@ func (rb *RingBuffer) Read(p []byte) int {
 func (rb *RingBuffer) write(data []byte) int {
 	n := 0
 	for i := 0; i < len(data); i++ {
-		if len(rb.data) == i {
-			break
-		}
 		rb.data[rb.head] = data[i]
 		n++
 		rb.head = (rb.head + 1) % rb.size
