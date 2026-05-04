@@ -37,10 +37,19 @@ func main() {
 	deviceConfig.Capture.Channels = 2
 	deviceConfig.SampleRate = 44100
 
+	var buffer []byte
+	DataLength := 882
+
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		// pInputSamples contém o que está sendo capturado agora
 		if len(pInputSamples) > 0 {
-			udp_connection(pInputSamples)
+			buffer = append(buffer, pInputSamples...)
+			if len(buffer) >= DataLength {
+				//packet := buffer[:DataLength]
+				// udp_connection(packet)
+				buffer = buffer[DataLength:]
+			}
+			udp_connection(pInputSamples[:frameCount])
 		}
 	}
 
