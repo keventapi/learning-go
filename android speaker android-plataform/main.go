@@ -2,63 +2,16 @@ package main
 
 import (
 	"fmt"
+	"localspeaker/ringbuffer"
 	"log"
 	"net"
 	"os"
-	"sync"
 
 	"github.com/gen2brain/malgo"
 )
 
-type RingBuffer struct {
-	data []byte
-	head int
-	tail int
-	size int
-	mu   sync.Mutex
-}
-
-func (rb *RingBuffer) Read(p []byte) int {
-	rb.mu.Lock()
-	defer rb.mu.Unlock()
-	n := 0
-	for i := 0; i < len(p); i++ {
-		if rb.tail == rb.head {
-			break
-		}
-
-		p[i] = rb.data[rb.tail]
-
-		rb.data[rb.tail] = 0
-
-		rb.tail = (rb.tail + 1) % rb.size
-		n++
-	}
-
-	return n
-}
-
-func (rb *RingBuffer) write(data []byte) int {
-	rb.mu.Lock()
-	defer rb.mu.Unlock()
-	n := 0
-	for i := 0; i < len(data); i++ {
-		if (rb.head+1)%rb.size == rb.tail {
-			rb.tail = (rb.tail + 1) % rb.size
-		}
-		rb.data[rb.head] = data[i]
-		n++
-		rb.head = (rb.head + 1) % rb.size
-	}
-	return n
-}
-
 func main() {
-	var rb RingBuffer
-	rb.head = 0
-	rb.tail = 0
-	rb.size = (44100 * 2 * 2) * 5
-	rb.data = make([]byte, rb.size)
+	rb := ringbuffer.New((44100 * 2 * 2) * 5)
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
@@ -86,7 +39,9 @@ func main() {
 	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-		read_len := rb.Read(pOutputSample)
+		packet := make([]byte, len(pOutputSample))
+		read_len, packet := rb.Read(pOutputSample, packet)
+		copy(pOutputSample, packet)
 		if read_len < len(pOutputSample) {
 			for i := read_len; i < len(pOutputSample); i++ {
 				pOutputSample[i] = 0
@@ -119,6 +74,6 @@ func main() {
 			continue
 		}
 
-		rb.write(buff)
+		rb.Write(buff)
 	}
 }
