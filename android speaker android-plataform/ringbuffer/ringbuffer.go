@@ -19,7 +19,17 @@ func New(size int) *Buffer {
 	}
 }
 
+func (rb *Buffer) getOccupied() int {
+	if rb.head >= rb.tail {
+		return rb.head - rb.tail
+	}
+	return (rb.size - rb.tail) + rb.head
+}
+
 func (rb *Buffer) Read(p []byte, c []byte) (ln int, buff []byte) {
+	if rb.getOccupied() <= rb.size/4 {
+		return 0, make([]byte, 0)
+	}
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
 	n := 0
