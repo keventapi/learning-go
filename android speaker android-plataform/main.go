@@ -16,11 +16,6 @@ type RingBuffer struct {
 	size int
 }
 
-func playback(rb *RingBuffer) {
-
-	fmt.Scanln()
-}
-
 func (rb *RingBuffer) Read(p []byte) int {
 	n := 0
 	for i := 0; i < len(p); i++ {
@@ -41,8 +36,8 @@ func (rb *RingBuffer) Read(p []byte) int {
 func (rb *RingBuffer) write(data []byte) int {
 	n := 0
 	for i := 0; i < len(data); i++ {
-		if rb.head+1 == rb.tail {
-			break
+		if (rb.head+1)%rb.size == rb.tail {
+			rb.tail = (rb.tail + 1) % rb.size
 		}
 		rb.data[rb.head] = data[i]
 		n++
@@ -55,7 +50,7 @@ func main() {
 	var rb RingBuffer
 	rb.head = 0
 	rb.tail = 0
-	rb.size = 44100 * 2 * 2
+	rb.size = (44100 * 2 * 2) * 5
 	rb.data = make([]byte, rb.size)
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
