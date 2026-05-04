@@ -31,14 +31,12 @@ func playback(rb *RingBuffer) {
 	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-		copy(pOutputSample, rb.data)
-
-		//read_len := rb.Read(pOutputSample)
-		//if read_len < len(pOutputSample) {
-		//	for i := read_len; i < len(pOutputSample); i++ {
-		//		pOutputSample[i] = 0
-		//	}
-		//}
+		read_len := rb.Read(pOutputSample)
+		if read_len < len(pOutputSample) {
+			for i := read_len; i < len(pOutputSample); i++ {
+				pOutputSample[i] = 0
+			}
+		}
 	}
 
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
@@ -78,7 +76,7 @@ func (rb *RingBuffer) Read(p []byte) int {
 func (rb *RingBuffer) write(data []byte) int {
 	n := 0
 	for i := 0; i < len(data); i++ {
-		if ((rb.head + 1) % rb.size) == rb.tail {
+		if len(rb.data) == i {
 			break
 		}
 		rb.data[rb.head] = data[i]
@@ -92,7 +90,7 @@ func main() {
 	var rb RingBuffer
 	rb.head = 0
 	rb.tail = 0
-	rb.size = (44100 * 2 * 2) * 5
+	rb.size = 44100 * 2 * 2
 	rb.data = make([]byte, rb.size)
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
@@ -110,7 +108,7 @@ func main() {
 	go playback(&rb)
 
 	for {
-		buff := make([]byte, 44100)
+		buff := make([]byte, 1780)
 		n, ClientAddrs, err := conn.ReadFromUDP(buff)
 
 		if err != nil {
@@ -120,7 +118,6 @@ func main() {
 		}
 
 		rb.write(buff)
-		rb.data = buff
 
 	}
 }

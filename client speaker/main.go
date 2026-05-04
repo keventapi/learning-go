@@ -10,7 +10,9 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("udp", "192.168.1.109:8080")
+	ip := ":8080"
+	ip = "192.168.1.109:8080"
+	conn, err := net.Dial("udp", ip)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -49,7 +51,6 @@ func main() {
 		}
 	}
 
-	// 4. Inicializar o dispositivo
 	device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
 		Data: onSamples,
 	})
