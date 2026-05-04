@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	rb := ringbuffer.New((44100 * 2 * 2) * 5)
+	rb := ringbuffer.New((44100 * 2 * 2) * 5 * 3)
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
