@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	rb := ringbuffer.New((44100 * 2 * 2) * 5 * 3)
+	rb := ringbuffer.New((48000 * 2 * 2) * 5 * 3) // 15s de buffer
 
 	addrs, err := net.ResolveUDPAddr("udp", ":8080")
 	if err != nil {
@@ -37,7 +37,7 @@ func main() {
 
 	deviceConfig.Playback.Format = malgo.FormatS16
 	deviceConfig.Playback.Channels = 2
-	deviceConfig.SampleRate = 44100
+	deviceConfig.SampleRate = 48000
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		packet := make([]byte, len(pOutputSample))

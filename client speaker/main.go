@@ -30,7 +30,7 @@ func main() {
 
 	deviceConfig.Capture.Format = malgo.FormatS16
 	deviceConfig.Capture.Channels = 2
-	deviceConfig.SampleRate = 44100
+	deviceConfig.SampleRate = 48000
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		if len(pInputSamples) > 0 {
