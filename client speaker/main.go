@@ -9,7 +9,7 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
-func udp_connection(buff []byte) {
+func main() {
 	conn, err := net.Dial("udp", "192.168.1.109:8080")
 	if err != nil {
 		log.Fatalln(err)
@@ -17,13 +17,6 @@ func udp_connection(buff []byte) {
 
 	defer conn.Close()
 
-	_, err = conn.Write(buff)
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func main() {
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
 		fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -38,18 +31,21 @@ func main() {
 	deviceConfig.SampleRate = 44100
 
 	var buffer []byte
-	DataLength := 882
+	DataLength := 880
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-		// pInputSamples contém o que está sendo capturado agora
 		if len(pInputSamples) > 0 {
 			buffer = append(buffer, pInputSamples...)
 			if len(buffer) >= DataLength {
-				//packet := buffer[:DataLength]
-				// udp_connection(packet)
+				packet := buffer[:DataLength]
+
+				_, err := conn.Write(packet)
+				if err != nil {
+					log.Fatalln(err)
+				}
+
 				buffer = buffer[DataLength:]
 			}
-			udp_connection(pInputSamples[:frameCount])
 		}
 	}
 
