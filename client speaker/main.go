@@ -32,21 +32,26 @@ func main() {
 	deviceConfig.Capture.Channels = 2
 	deviceConfig.SampleRate = 44100
 
-	var buffer []byte
-	DataLength := 880
+	//var buffer []byte
+	//DataLength := 880
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		if len(pInputSamples) > 0 {
-			buffer = append(buffer, pInputSamples...)
-			if len(buffer) >= DataLength {
-				packet := buffer[:DataLength]
+			//buffer = append(buffer, pInputSamples...)
+			//if len(buffer) >= DataLength {
+			//	packet := buffer[:DataLength]
+			//
+			//	_, err := conn.Write(packet)
+			//	if err != nil {
+			//		log.Fatalln(err)
+			//	}
+			//
+			//	buffer = buffer[DataLength:]
+			//}
 
-				_, err := conn.Write(packet)
-				if err != nil {
-					log.Fatalln(err)
-				}
-
-				buffer = buffer[DataLength:]
+			_, err := conn.Write(pInputSamples)
+			if err != nil {
+				log.Fatalln(err)
 			}
 		}
 	}

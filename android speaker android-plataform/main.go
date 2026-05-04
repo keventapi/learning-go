@@ -17,6 +17,59 @@ type RingBuffer struct {
 }
 
 func playback(rb *RingBuffer) {
+
+	fmt.Scanln()
+}
+
+func (rb *RingBuffer) Read(p []byte) int {
+	n := 0
+	for i := 0; i < len(p); i++ {
+		if rb.tail == rb.head {
+			break
+		}
+
+		p[i] = rb.data[rb.tail]
+
+		rb.data[rb.tail] = 0
+
+		rb.tail = (rb.tail + 1) % rb.size
+		n++
+	}
+	return n
+}
+
+func (rb *RingBuffer) write(data []byte) int {
+	n := 0
+	for i := 0; i < len(data); i++ {
+		if rb.head+1 == rb.tail {
+			break
+		}
+		rb.data[rb.head] = data[i]
+		n++
+		rb.head = (rb.head + 1) % rb.size
+	}
+	return n
+}
+
+func main() {
+	var rb RingBuffer
+	rb.head = 0
+	rb.tail = 0
+	rb.size = 44100 * 2 * 2
+	rb.data = make([]byte, rb.size)
+
+	addrs, err := net.ResolveUDPAddr("udp", ":8080")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	conn, err := net.ListenUDP("udp", addrs)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer conn.Close()
+
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
 		fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -53,56 +106,6 @@ func playback(rb *RingBuffer) {
 		fmt.Printf("Erro ao iniciar dispositivo: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Scanln()
-}
-
-func (rb *RingBuffer) Read(p []byte) int {
-	n := 0
-	for i := 0; i < len(p); i++ {
-		if rb.tail == rb.head {
-			break
-		}
-
-		p[i] = rb.data[rb.tail]
-
-		rb.data[rb.tail] = 0
-
-		rb.tail = (rb.tail + 1) % rb.size
-		n++
-	}
-	return n
-}
-
-func (rb *RingBuffer) write(data []byte) int {
-	n := 0
-	for i := 0; i < len(data); i++ {
-		rb.data[rb.head] = data[i]
-		n++
-		rb.head = (rb.head + 1) % rb.size
-	}
-	return n
-}
-
-func main() {
-	var rb RingBuffer
-	rb.head = 0
-	rb.tail = 0
-	rb.size = 44100 * 2 * 2
-	rb.data = make([]byte, rb.size)
-
-	addrs, err := net.ResolveUDPAddr("udp", ":8080")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	conn, err := net.ListenUDP("udp", addrs)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	defer conn.Close()
-
-	go playback(&rb)
 
 	for {
 		buff := make([]byte, 1780)
