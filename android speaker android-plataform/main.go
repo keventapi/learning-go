@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 
 	"github.com/gen2brain/malgo"
 )
@@ -14,9 +15,12 @@ type RingBuffer struct {
 	head int
 	tail int
 	size int
+	mu   sync.Mutex
 }
 
 func (rb *RingBuffer) Read(p []byte) int {
+	rb.mu.Lock()
+	defer rb.mu.Unlock()
 	n := 0
 	for i := 0; i < len(p); i++ {
 		if rb.tail == rb.head {
@@ -30,10 +34,13 @@ func (rb *RingBuffer) Read(p []byte) int {
 		rb.tail = (rb.tail + 1) % rb.size
 		n++
 	}
+
 	return n
 }
 
 func (rb *RingBuffer) write(data []byte) int {
+	rb.mu.Lock()
+	defer rb.mu.Unlock()
 	n := 0
 	for i := 0; i < len(data); i++ {
 		if (rb.head+1)%rb.size == rb.tail {
@@ -74,8 +81,8 @@ func main() {
 
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Playback)
 
-	deviceConfig.Capture.Format = malgo.FormatS16
-	deviceConfig.Capture.Channels = 2
+	deviceConfig.Playback.Format = malgo.FormatS16
+	deviceConfig.Playback.Channels = 2
 	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
@@ -113,6 +120,5 @@ func main() {
 		}
 
 		rb.write(buff)
-
 	}
 }
