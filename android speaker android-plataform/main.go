@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"localspeaker/decode"
 	"localspeaker/ringbuffer"
 	"log"
 	"net"
@@ -68,14 +67,14 @@ func main() {
 	for {
 		buff := make([]byte, 1780)
 		n, ClientAddrs, err := conn.ReadFromUDP(buff)
-		data := make([]byte, n*2)
-		data = decode.DecodeUlawPcm(buff[:n])
+		//data := make([]byte, n*2)
+		//data = decode.DecodeUlawPcm(buff[:n])
 		if err != nil {
 			println(n, ClientAddrs)
 			log.Println(err)
 			continue
 		}
 
-		rb.Write(data)
+		rb.Write(buff)
 	}
 }

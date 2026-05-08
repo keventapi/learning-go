@@ -1,7 +1,6 @@
 package main
 
 import (
-	"clientspeaker/compressor"
 	"fmt"
 	"log"
 	"net"
@@ -35,9 +34,9 @@ func main() {
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		if len(pInputSamples) > 0 {
-			buffer := make([]byte, len(pInputSamples))
-			buffer = compressor.PcmToUlaw(pInputSamples)
-			_, err := conn.Write(buffer)
+			//buffer := make([]byte, len(pInputSamples))
+			//buffer = compressor.PcmToUlaw(pInputSamples)
+			_, err := conn.Write(pInputSamples)
 			if err != nil {
 				log.Fatalln(err)
 			}
