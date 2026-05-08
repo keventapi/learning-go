@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clientspeaker/compressor"
 	"fmt"
 	"log"
 	"net"
@@ -30,11 +31,13 @@ func main() {
 
 	deviceConfig.Capture.Format = malgo.FormatS16
 	deviceConfig.Capture.Channels = 2
-	deviceConfig.SampleRate = 48000
+	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		if len(pInputSamples) > 0 {
-			_, err := conn.Write(pInputSamples)
+			buffer := make([]byte, len(pInputSamples))
+			buffer = compressor.PcmToUlaw(pInputSamples)
+			_, err := conn.Write(buffer)
 			if err != nil {
 				log.Fatalln(err)
 			}

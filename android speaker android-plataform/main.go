@@ -1,8 +1,8 @@
 package main
 
-// just to change something
 import (
 	"fmt"
+	"localspeaker/decode"
 	"localspeaker/ringbuffer"
 	"log"
 	"net"
@@ -37,7 +37,7 @@ func main() {
 
 	deviceConfig.Playback.Format = malgo.FormatS16
 	deviceConfig.Playback.Channels = 2
-	deviceConfig.SampleRate = 48000
+	deviceConfig.SampleRate = 44100
 
 	onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 		packet := make([]byte, len(pOutputSample))
@@ -68,13 +68,14 @@ func main() {
 	for {
 		buff := make([]byte, 1780)
 		n, ClientAddrs, err := conn.ReadFromUDP(buff)
-
+		data := make([]byte, n*2)
+		data = decode.DecodeUlawPcm(buff[:n])
 		if err != nil {
 			println(n, ClientAddrs)
 			log.Println(err)
 			continue
 		}
 
-		rb.Write(buff)
+		rb.Write(data)
 	}
 }
