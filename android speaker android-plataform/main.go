@@ -2,28 +2,42 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"localspeaker/ringbuffer"
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/gen2brain/malgo"
 )
 
+func handle_connection(conn net.Conn, rb *ringbuffer.Buffer) {
+	defer conn.Close()
+	buffer := make([]byte, 960*2)
+	for {
+		conn.SetDeadline(time.Now().Add(40 * time.Millisecond))
+		_, err := io.ReadFull(conn, buffer)
+		if err != nil {
+			continue
+		}
+		rb.Write(buffer)
+	}
+}
+
 func main() {
 	rb := ringbuffer.New((48000 * 2 * 2) * 5 * 3) // 15s de buffer
-
-	addrs, err := net.ResolveUDPAddr("udp", ":8080")
+	addrs, err := net.ResolveTCPAddr("tcp", ":8080")
 	if err != nil {
 		log.Fatalln(err)
 	}
-	conn, err := net.ListenUDP("udp", addrs)
+	listener, err := net.ListenTCP("tcp", addrs)
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	defer conn.Close()
+	defer listener.Close()
 
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
@@ -65,16 +79,12 @@ func main() {
 	}
 
 	for {
-		buff := make([]byte, 1780)
-		n, ClientAddrs, err := conn.ReadFromUDP(buff)
-		//data := make([]byte, n*2)
-		//data = decode.DecodeUlawPcm(buff[:n])
+		conn, err := listener.Accept()
 		if err != nil {
-			println(n, ClientAddrs)
-			log.Println(err)
+			fmt.Println("erro ao aceitar conexão")
 			continue
 		}
 
-		rb.Write(buff)
+		go handle_connection(conn, rb)
 	}
 }

@@ -12,7 +12,11 @@ import (
 func main() {
 	ip := ":8080"
 	ip = "192.168.1.109:8080"
-	conn, err := net.Dial("udp", ip)
+	addrs, err := net.ResolveTCPAddr("tcp", ip)
+	if err != nil {
+		fmt.Println("erro ao resolver o endereço tcp")
+	}
+	conn, err := net.DialTCP("tcp", nil, addrs)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -36,6 +40,7 @@ func main() {
 		if len(pInputSamples) > 0 {
 			//buffer := make([]byte, len(pInputSamples))
 			//buffer = compressor.PcmToUlaw(pInputSamples)
+
 			_, err := conn.Write(pInputSamples)
 			if err != nil {
 				log.Fatalln(err)
