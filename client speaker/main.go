@@ -129,12 +129,7 @@ func main() {
 		onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 			packet := make([]byte, len(pOutputSample))
 			read_len, packet := rb.Read(pOutputSample, packet)
-			copy(pOutputSample, packet)
-			if read_len < len(pOutputSample) {
-				for i := read_len; i < len(pOutputSample); i++ {
-					pOutputSample[i] = 0
-				}
-			}
+			copy(pOutputSample, packet[:read_len])
 		}
 
 		device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{

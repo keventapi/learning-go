@@ -24,7 +24,7 @@ func handle_connection(conn net.Conn, rb_output *ringbuffer.Buffer, rb_input *ri
 		rb_output.Write(buffer_output)
 
 		packet := make([]byte, 960*2)
-		read_len, packet := rb_output.Read(packet, packet)
+		read_len, packet := rb_input.Read(packet, packet)
 		if read_len > 0 {
 			conn.Write(packet[:read_len])
 		}
