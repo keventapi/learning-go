@@ -51,13 +51,6 @@ func main() {
 
 	defer conn.Close()
 
-	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
-	if err != nil {
-		log.Fatalln(err)
-		os.Exit(1)
-	}
-	defer ctx.Uninit() // Garante a limpeza dos recursos
-
 	AudioChan := make(chan []byte, 100)
 	go func() {
 		for sample := range AudioChan {
@@ -70,6 +63,13 @@ func main() {
 
 	// output handler
 	go func() {
+		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+		if err != nil {
+			log.Fatalln(err)
+			os.Exit(1)
+		}
+		defer ctx.Uninit()
+
 		deviceConfig := malgo.DefaultDeviceConfig(malgo.Loopback)
 		deviceConfig.Capture.Format = malgo.FormatS16
 		deviceConfig.Capture.Channels = 2
@@ -109,6 +109,12 @@ func main() {
 
 	// input handler
 	go func() {
+		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+		if err != nil {
+			log.Fatalln(err)
+			os.Exit(1)
+		}
+		defer ctx.Uninit()
 		id := GetDeviceId(ctx)
 
 		deviceConfig := malgo.DefaultDeviceConfig(malgo.Playback)

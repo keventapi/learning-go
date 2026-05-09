@@ -47,15 +47,15 @@ func main() {
 
 	defer listener.Close()
 
-	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
-	if err != nil {
-		fmt.Printf("Erro ao inicializar contexto: %v\n", err)
-		os.Exit(1)
-	}
-	defer ctx.Uninit()
-
 	// output
 	go func() {
+		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+		if err != nil {
+			fmt.Printf("Erro ao inicializar contexto: %v\n", err)
+			os.Exit(1)
+		}
+		defer ctx.Uninit()
+
 		deviceConfig := malgo.DefaultDeviceConfig(malgo.Playback)
 		deviceConfig.Playback.Format = malgo.FormatS16
 		deviceConfig.Playback.Channels = 2
@@ -64,12 +64,7 @@ func main() {
 		onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
 			packet := make([]byte, len(pOutputSample))
 			read_len, packet := rb_output.Read(pOutputSample, packet)
-			copy(pOutputSample, packet)
-			if read_len < len(pOutputSample) {
-				for i := read_len; i < len(pOutputSample); i++ {
-					pOutputSample[i] = 0
-				}
-			}
+			copy(pOutputSample, packet[:read_len])
 		}
 
 		device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
@@ -91,6 +86,13 @@ func main() {
 
 	// input
 	go func() {
+		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+		if err != nil {
+			fmt.Printf("Erro ao inicializar contexto: %v\n", err)
+			os.Exit(1)
+		}
+		defer ctx.Uninit()
+
 		deviceConfig := malgo.DefaultDeviceConfig(malgo.Capture)
 		deviceConfig.Capture.Format = malgo.FormatS16
 		deviceConfig.Capture.Channels = 2
