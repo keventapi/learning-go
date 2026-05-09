@@ -16,13 +16,14 @@ func handle_connection(conn net.Conn, rb_output *ringbuffer.Buffer, rb_input *ri
 	defer conn.Close()
 	buffer_output := make([]byte, 960*2)
 	for {
+		conn.SetDeadline(time.Now().Add(40 * time.Millisecond))
+
 		packet := make([]byte, 960*2)
 		read_len, packet := rb_input.Read(packet, packet)
 		if read_len > 0 {
 			conn.Write(packet[:read_len])
 		}
 
-		conn.SetDeadline(time.Now().Add(40 * time.Millisecond))
 		_, err := io.ReadFull(conn, buffer_output)
 		if err != nil {
 			continue
