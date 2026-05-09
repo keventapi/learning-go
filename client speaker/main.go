@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clientspeaker/ringbuffer"
 	"fmt"
 	"io"
 	"log"
@@ -26,6 +27,7 @@ func GetDeviceId(ctx *malgo.AllocatedContext) *malgo.DeviceID {
 }
 
 func main() {
+	rb := ringbuffer.New((44100 * 2 * 2) * 2)
 	ip := "192.168.1.109:8080"
 	addrs, err := net.ResolveTCPAddr("tcp", ip)
 	if err != nil {
@@ -41,9 +43,9 @@ func main() {
 
 	go func() {
 		for {
-			buff := make([]byte, 1024)
+			buff := make([]byte, 960*2)
 			n, _ := io.ReadFull(conn, buff)
-			fmt.Println(string(buff[:n]))
+			rb.Write(buff[:n])
 		}
 	}()
 
@@ -119,7 +121,14 @@ func main() {
 		deviceConfig.Playback.Channels = 2
 		deviceConfig.SampleRate = 44100
 		onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-
+			packet := make([]byte, len(pOutputSample))
+			read_len, packet := rb.Read(pOutputSample, packet)
+			copy(pOutputSample, packet)
+			if read_len < len(pOutputSample) {
+				for i := read_len; i < len(pOutputSample); i++ {
+					pOutputSample[i] = 0
+				}
+			}
 		}
 
 		device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
