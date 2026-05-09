@@ -18,6 +18,8 @@ func handle_connection(conn net.Conn, rb *ringbuffer.Buffer) {
 	for {
 		conn.SetDeadline(time.Now().Add(40 * time.Millisecond))
 		_, err := io.ReadFull(conn, buffer)
+
+		conn.Write([]byte("Somente testando conexão"))
 		if err != nil {
 			continue
 		}

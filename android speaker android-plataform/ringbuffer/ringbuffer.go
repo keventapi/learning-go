@@ -27,7 +27,7 @@ func (rb *Buffer) getOccupied() int {
 }
 
 func (rb *Buffer) Read(p []byte, c []byte) (ln int, buff []byte) {
-	if rb.getOccupied() <= rb.size/4 {
+	if rb.getOccupied() <= rb.size/72000000 {
 		return 0, make([]byte, 0)
 	}
 	rb.mu.Lock()
