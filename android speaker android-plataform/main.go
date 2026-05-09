@@ -89,7 +89,7 @@ func main() {
 
 	// input
 	go func() {
-		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+		ctx, err := malgo.InitContext([]malgo.Backend{malgo.BackendOpensl}, malgo.ContextConfig{}, nil)
 		if err != nil {
 			fmt.Printf("Erro ao inicializar contexto: %v\n", err)
 			os.Exit(1)
