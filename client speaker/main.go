@@ -45,6 +45,7 @@ func main() {
 		for {
 			buff := make([]byte, 960*2)
 			n, _ := io.ReadFull(conn, buff)
+			fmt.Println(buff)
 			rb.Write(buff[:n])
 		}
 	}()

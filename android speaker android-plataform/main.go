@@ -16,6 +16,12 @@ func handle_connection(conn net.Conn, rb_output *ringbuffer.Buffer, rb_input *ri
 	defer conn.Close()
 	buffer_output := make([]byte, 960*2)
 	for {
+		packet := make([]byte, 960*2)
+		read_len, packet := rb_input.Read(packet, packet)
+		if read_len > 0 {
+			conn.Write(packet[:read_len])
+		}
+
 		conn.SetDeadline(time.Now().Add(40 * time.Millisecond))
 		_, err := io.ReadFull(conn, buffer_output)
 		if err != nil {
@@ -23,11 +29,6 @@ func handle_connection(conn net.Conn, rb_output *ringbuffer.Buffer, rb_input *ri
 		}
 		rb_output.Write(buffer_output)
 
-		packet := make([]byte, 960*2)
-		read_len, packet := rb_input.Read(packet, packet)
-		if read_len > 0 {
-			conn.Write(packet[:read_len])
-		}
 	}
 }
 
@@ -49,6 +50,7 @@ func main() {
 
 	// output
 	go func() {
+		return // break para isolar teste
 		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 		if err != nil {
 			fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -95,11 +97,11 @@ func main() {
 
 		deviceConfig := malgo.DefaultDeviceConfig(malgo.Capture)
 		deviceConfig.Capture.Format = malgo.FormatS16
-		deviceConfig.Capture.Channels = 2
+		deviceConfig.Capture.Channels = 1
 		deviceConfig.SampleRate = 44100
 
 		onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
-			rb_input.Write(pOutputSample)
+			rb_input.Write(pInputSamples)
 		}
 
 		device, err := malgo.InitDevice(ctx.Context, deviceConfig, malgo.DeviceCallbacks{
