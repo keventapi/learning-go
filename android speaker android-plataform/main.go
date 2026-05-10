@@ -51,7 +51,6 @@ func main() {
 
 	// output
 	go func() {
-		return // break para isolar teste
 		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 		if err != nil {
 			fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -89,6 +88,7 @@ func main() {
 
 	// input
 	go func() {
+		return // break pelo metódo não estar funcionando
 		ctx, err := malgo.InitContext([]malgo.Backend{malgo.BackendOpensl}, malgo.ContextConfig{}, nil)
 		if err != nil {
 			fmt.Printf("Erro ao inicializar contexto: %v\n", err)
@@ -98,7 +98,7 @@ func main() {
 
 		deviceConfig := malgo.DefaultDeviceConfig(malgo.Capture)
 		deviceConfig.Capture.Format = malgo.FormatS16
-		deviceConfig.Capture.Channels = 1
+		deviceConfig.Capture.Channels = 2
 		deviceConfig.SampleRate = 44100
 
 		onSamples := func(pOutputSample, pInputSamples []byte, frameCount uint32) {

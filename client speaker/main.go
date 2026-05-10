@@ -44,9 +44,8 @@ func main() {
 	go func() {
 		for {
 			buff := make([]byte, 960*2)
-			n, _ := io.ReadFull(conn, buff)
-			fmt.Println(buff)
-			rb.Write(buff[:n])
+			io.ReadFull(conn, buff)
+			rb.Write(buff)
 		}
 	}()
 
@@ -110,6 +109,7 @@ func main() {
 
 	// input handler
 	go func() {
+		return // break pelo metodo não estar funcionando
 		ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 		if err != nil {
 			log.Fatalln(err)
